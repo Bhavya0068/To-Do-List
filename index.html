@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extra Wide To-Do List</title>
+    <style>
+        :root {
+            --color-1: #3A506B;
+            --color-2: #5BC0BE;
+            --color-3: #0B132B;
+            --color-4: #FCBF49;
+            --text-dark: #0B132B;
+            --text-light: #FFFFFF;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--color-1) 0%, var(--color-2) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 95%;
+            max-width: 1200px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before, .container::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+            z-index: -1;
+        }
+        
+        .container::before {
+            top: -80px;
+            left: -80px;
+            width: 200px;
+            height: 200px;
+            background-color: var(--color-2);
+        }
+
+        .container::after {
+            bottom: -60px;
+            right: -60px;
+            width: 150px;
+            height: 150px;
+            background-color: var(--color-4);
+            border-radius: 15px;
+            transform: rotate(45deg);
+        }
+
+        h1 {
+            color: var(--color-3);
+            font-size: 3.5rem;
+            margin-bottom: 40px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background-color: var(--color-2);
+        }
+        
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"], input[type="date"] {
+            width: 80%;
+            padding: 15px 25px;
+            border: none;
+            background-color: #f1f1f1;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="date"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--color-2);
+        }
+
+        button {
+            padding: 15px 30px;
+            background-color: var(--color-2);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:hover {
+            background-color: var(--color-4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-btn {
+            background-color: var(--color-3);
+            color: var(--text-light);
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            background-color: #f1f1f1;
+            margin-bottom: 20px;
+            padding: 20px 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .task-info {
+            flex-grow: 1;
+        }
+        
+        .task-text {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .student-name {
+            font-size: 1rem;
+            color: #555;
+        }
+        
+        .delete-btn {
+            background-color: var(--color-1);
+            color: var(--text-light);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background-color: var(--color-3);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <form id="taskForm">
+            <input type="text" id="taskInput" placeholder="What needs to be done?" required>
+            <input type="text" id="studentInput" placeholder="Who's responsible?" required>
+            <input type="date" id="taskDate">
+            <button type="submit" id="addTask">Add Task</button>
+        </form>
+        <button class="clear-btn" id="clearAllTasks">Clear All Tasks</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskForm = document.getElementById('taskForm');
+            const taskInput = document.getElementById('taskInput');
+            const studentInput = document.getElementById('studentInput');
+            const taskList = document.getElementById('taskList');
+            const clearAllTasks = document.getElementById('clearAllTasks');
+
+            taskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                addTask(taskInput.value, studentInput.value);
+                taskInput.value = '';
+                studentInput.value = '';
+            });
+
+            clearAllTasks.addEventListener('click', function() {
+                taskList.innerHTML = '';
+            });
+
+            function addTask(taskText, studentName) {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-text">${taskText}</div>
+                        <div class="student-name">Assigned to: ${studentName}</div>
+                    </div>
+                    <button class="delete-btn">Delete</button>
+                `;
+
+                li.querySelector('.delete-btn').addEventListener('click', function() {
+                    li.remove();
+                });
+
+                taskList.appendChild(li);
+            }
+        });
+    </script>
+</body>
+</html>
